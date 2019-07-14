@@ -34,10 +34,40 @@ def getStop(stopName):
 
 	return {'id': stopId, 'name': stopName}
 
-print('Wyszukiwarka polaczen komunikacji miejskiej')
+
+def getDepartureInfo(stopId):
+	url = 'http://www.ttss.krakow.pl/internetservice/services/passageInfo/stopPassages/stop?stop={}&mode=departure&language=en'.format(stopId)
+	res = requests.get(url)
+	return res.json()
+
+
+print('Wyszukiwarka polaczen komunikacji miejskiej w Krakowie')
 start = getStop(input('Podaj nazwe przystanku poczatkowego '))
 stop = getStop(input('Podaj nazwe przystanku koncowego '))
 
 if start == None or stop == None:
 	print('Brak danych, sproboj jeszcze raz')
 
+trasa = 'Trasa: {} - {}'.format(start['name'], stop['name'])
+print(trasa)
+
+
+
+# wez routes przystanku koncowego
+directions = []
+for route in getDepartureInfo(stop['id'])['routes']:
+	for direction in route['directions']:
+		directions.append(direction)
+
+# szukaj lini o takich samych routes wsrod lini przejezdzajacych przez przystanek poczatkowy
+departures = []
+for line in getDepartureInfo(start['id'])['actual']:
+	if line['direction'] in directions:
+		departures.append(line)
+
+# wyswietl odjazdy
+for dep in departures:
+	print('Linia {} kierunek {} odjazd {}'.format(dep['patternText'], dep['direction'], dep['actualTime']))
+
+if len(departures) == 0:
+	print('Brak przejazdów')
