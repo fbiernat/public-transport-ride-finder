@@ -6,9 +6,12 @@
 
 import requests
 
+
+url = 'http://www.ttss.krakow.pl/internetservice/services/'
+
 def getStop(stopName):
-	stopQuery = 'http://www.ttss.krakow.pl/internetservice/services/lookup/autocomplete/json?query={}&language=en'
-	r = requests.get(stopQuery.format(stopName))
+	stopQueryUrl = url + 'lookup/autocomplete/json?query={}&language=en'
+	r = requests.get(stopQueryUrl.format(stopName))
 	res = r.json()
 	try:
 		count = r.json()[0]['count']
@@ -42,8 +45,8 @@ def getStop(stopName):
 
 
 def getDepartureInfo(stopId):
-	url = 'http://www.ttss.krakow.pl/internetservice/services/passageInfo/stopPassages/stop?stop={}&mode=departure&language=en'.format(stopId)
-	res = requests.get(url)
+	departureRequestUrl = url + 'passageInfo/stopPassages/stop?stop={}&mode=departure&language=en'.format(stopId)
+	res = requests.get(departureRequestUrl)
 	return res.json()
 
 
