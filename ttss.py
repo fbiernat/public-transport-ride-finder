@@ -1,3 +1,9 @@
+# TODO: * dodanie przekazywania argumentów funkcji wyszukujących przystanki z linii poleceń 
+# 		* rozwinięcie algorytmu wyszukiwania przejazdów
+#		* obsługa polskich znaków w odpowiedzi z serwera
+#		* format czasu do odjazdu tramwaju (np <1min.)
+
+
 import requests
 
 def getStop(stopName):
