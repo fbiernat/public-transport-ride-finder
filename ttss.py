@@ -2,6 +2,7 @@ import requests
 import time
 import sys
 from math import floor
+import html
 
 # TODO: [-] dodanie przekazywania argumentów funkcji wyszukujących przystanki z linii poleceń
 #		[ ] format czasu do odjazdu tramwaju (np <1min.)
@@ -21,14 +22,14 @@ def getStop(stopName):
             raise IndexError
         count = r.json()[0]['count']
     except IndexError:
-        print('Przystanek ' + stopName + ' nie istnieje')
-        return
+        print('Nie znaleziono przystanku ' + stopName)
+        return 0
 
     if count == 1:
         userInput = 1
     else:
         for i in range(1, count + 1):
-            print(str(i) + ' - ' + res[i]['name'])
+            print(str(i) + ' - ' + html.unescape(res[i]['name']))
 
         while True:
             userInput = input('Wybierz numer przystanku ')
@@ -42,7 +43,7 @@ def getStop(stopName):
             break
 
     stopId = res[userInput]['id']
-    stopName = res[userInput]['name']
+    stopName = html.unescape(res[userInput]['name'])
 
     return {'id': stopId, 'name': stopName}
 
@@ -109,12 +110,26 @@ def main():
         print('Sposob użycia python3 ttss.py nazwa-przystanku-poczatkowego nazwa-przystanku-koncowego')
         return
 
-    print('Wyszukiwarka polaczen komunikacji miejskiej w Krakowie'.upper())
+    with open('logo.txt') as l:
+        lines = l.readlines()
+        for line in lines:
+            print(line.rstrip('\n'))
+
+    print('\nWyszukiwarka polaczen komunikacji miejskiej w Krakowie'.upper())
 
     if (len(sys.argv) == 1):
         try:
-            start = getStop(input('Podaj nazwe przystanku poczatkowego '))
-            stop = getStop(input('Podaj nazwe przystanku koncowego '))
+            while True:
+                start = getStop(input('Podaj nazwe przystanku poczatkowego '))
+                if start != 0:
+                    break
+
+            print('START: ' + start['name'])
+            while True:
+                stop = getStop(input('Podaj nazwe przystanku koncowego '))
+                if stop != 0:
+                    break
+            print('STOP: ' + stop['name'])
         except KeyboardInterrupt:
             print()
             return
