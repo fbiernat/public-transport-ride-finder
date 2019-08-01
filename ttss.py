@@ -5,7 +5,7 @@ from math import floor
 import html
 
 # TODO: [-] dodanie przekazywania argumentów funkcji wyszukujących przystanki z linii poleceń
-#		[ ] format czasu do odjazdu tramwaju (np <1min.)
+#		[-] format czasu do odjazdu tramwaju (np <1min.)
 # 		[ ] rozwinięcie algorytmu wyszukiwania przejazdów (obsługa tras z przesiadkami)
 
 url = 'http://www.ttss.krakow.pl/internetservice/services/'
@@ -66,7 +66,6 @@ def getLine(length, character):
 
 
 def compareTime(time1, time2):
-    # print(time1 + ', ' + time2)
     result = ''
     deltaH = 0
     if time2 == 'Brak':
@@ -76,22 +75,22 @@ def compareTime(time1, time2):
     t2 = time2.split(':')
 
     t1[0] = int(t1[0])
-    t2[0] = int(t2[0])
     t1[1] = int(t1[1])
+    t2[0] = int(t2[0])
     t2[1] = int(t2[1])
 
-    if t1[0] >= t2[0] and t1[1] >= t2[1]:
-        return 'Odjechał'
+    # if t1[0] >= t2[0] and t1[1] >= t2[1]:
+    #     return 'Odjechał'
 
-    if t1[0] < t2[0]:
-        deltaH = t2[0] - t1[0]
-        t2[1] += 60 * deltaH
-        # result += str(t2[0] - t1[0]) + 'h'
+    # if t1[0] < t2[0]:
+    #     deltaH = t2[0] - t1[0]
+    #     t2[1] += 60 * deltaH
+    # result += str(t2[0] - t1[0]) + 'h'
 
     if t1[1] < t2[1]:
         delta = t2[1] - t1[1]
         if delta == 0:
-            return 'Odjechał'
+            return '<1min'
         else:
             if deltaH > 0:
                 delta += deltaH * 60
