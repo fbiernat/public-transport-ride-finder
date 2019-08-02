@@ -20,8 +20,10 @@ Run
 
 Sample input
 
-`python3 ttss.py bagatela mogilskie
+```
+python3 ttss.py bagatela mogilskie
 		    ^        ^
 		    |        |____ destination stop
 		    |	            
-		    |_____________ starting stop`
+		    |_____________ starting stop
+```
