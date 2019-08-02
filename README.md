@@ -17,3 +17,7 @@ Install dependencies
 Run
 
 `python3 ttss.py`
+
+Sample input
+
+`python3 ttss.py bagatela mogilskie`
