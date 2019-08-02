@@ -1,4 +1,11 @@
 # ttss-client
+```
+   __  __               _________            __ 
+  / /_/ /___________   / ____/ (_)__  ____  / /_
+ / __/ __/ ___/ ___/  / /   / / / _ \/ __ \/ __/
+/ /_/ /_(__  |__  )  / /___/ / /  __/ / / / /_  
+\__/\__/____/____/   \____/_/_/\___/_/ /_/\__/  
+```
 Python script for searching public transport rides in Kraków, cli front for ttss.krakow.pl service
 
 ## How to run
