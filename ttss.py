@@ -153,7 +153,6 @@ def main():
         print(getLine(lineLength, '-'))
 
         for daparture in departures:
-            # print(dep)
             time = daparture.get('plannedTime', 'Brak')
             relTime = daparture.get('actualRelativeTime', '-')
             print('{:9} {:20} {:5} {}'.format(
