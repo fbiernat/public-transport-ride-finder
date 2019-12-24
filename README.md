@@ -8,7 +8,7 @@
 ```
 Python script for searching public transport rides in Kraków, cli front for ttss.krakow.pl service
 
-## How to run
+## Installation
 Clone repository
 
 `git clone https://github.com/fbiernat/ttss-client.git`
