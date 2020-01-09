@@ -1,16 +1,15 @@
 import requests
-import time
 import sys
 from math import floor, ceil
-import html
+from html import unescape
 
 # TODO: [-] dodanie przekazywania argumentów funkcji wyszukujących przystanki z linii poleceń
 #       [-] format czasu do odjazdu tramwaju (np <1min.)
 #       [ ] rozwinięcie algorytmu wyszukiwania przejazdów (obsługa tras z przesiadkami)
+#       [-] pobranie i wyświetlenie listy przystanków
+#       [-] zapis i odczyt listy przystanków do/z pliku
 
 API_URL = 'http://www.ttss.krakow.pl/internetservice/services/'
-
-# curl http://www.ttss.krakow.pl/internetservice/services/lookup/autocomplete/json?query=123&language=en
 
 
 def getStopInfo(stopName):
@@ -34,7 +33,7 @@ def getStopInfo(stopName):
         userInput = 1
     else:
         for i in range(1, count + 1):
-            print(str(i) + ' - ' + html.unescape(res[i]['name']))
+            print(str(i) + ' - ' + unescape(res[i]['name']))
 
         while True:
             userInput = input('Wybierz numer przystanku ')
@@ -48,11 +47,9 @@ def getStopInfo(stopName):
             break
 
     stopId = res[userInput]['id']
-    stopName = html.unescape(res[userInput]['name'])
+    stopName = unescape(res[userInput]['name'])
 
     return {'id': stopId, 'name': stopName}
-
-# curl http://www.ttss.krakow.pl/internetservice/services/passageInfo/stopPassages/stop?stop=125&mode=departure&language=en
 
 
 def getDepartureInfo(stopId):
@@ -63,7 +60,7 @@ def getDepartureInfo(stopId):
     return res.json()
 
 
-def printLine(length, character = '-'):
+def printLine(length, character='-'):
     line = ''
     for i in range(length):
         line += character
@@ -81,7 +78,7 @@ def printMinutesToDeparture(seconds):
             return '<1min'
     else:
         minutes = ceil(seconds / 60)
-        
+
     return str(minutes) + 'min'
 
 
@@ -92,40 +89,11 @@ def printLogo():
             print(line.rstrip('\n'))
 
     print('\nWyszukiwarka połączen komunikacji miejskiej w Krakowie'.upper())
+    print('')
 
 
-def main():
-    if (len(sys.argv) != 1 and len(sys.argv) != 3):
-        print('Sposob użycia python3 ttss.py nazwa-przystanku-poczatkowego nazwa-przystanku-koncowego')
-        return
-
-    printLogo()
-
-    if len(sys.argv) == 1:
-        start = getStopInfo(input('Podaj nazwę przystanku początkowego '))
-        if start == None:
-            print('Nie podano przystanku')
-            return
-        print('Przystanek początkowy: ' + start['name'])
-        stop = getStopInfo(input('Podaj nazwę przystanku końcowego '))
-        if stop == None:
-            print('Nie podano przystanku')
-            return
-        print('Przystanek końcowy: ' + stop['name'])
-
-    elif len(sys.argv) == 3:
-        start = getStopInfo(sys.argv[1])
-        stop = getStopInfo(sys.argv[2])
-
-    if stop['id'] == start['id']:
-        print('Wybrano ten sam przystanek')
-        return
-
-    if start == None or stop == None:
-        print('Brak danych, sprobój jeszcze raz')
-        return
-
-    # pobierz trasy przystanku koncowego
+def listDepartures(start, stop, numberOfDepartures):
+     # pobierz trasy przystanku koncowego
     directions = []
     for route in getDepartureInfo(stop['id'])['routes']:
         for direction in route['directions']:
@@ -139,7 +107,6 @@ def main():
 
     lineLength = 46
 
-    print()
     trasa = '{:>21} - {}'.format(start['name'], stop['name'])
     print(trasa)
 
@@ -156,15 +123,100 @@ def main():
         print('rozkładu')
 
         printLine(lineLength, '-')
-
+        i = 0
         for daparture in departures:
+            i += 1
             time = daparture.get('plannedTime', 'Brak')
             relTimeSeconds = daparture.get('actualRelativeTime', '-')
             print('{:9} {:20} {:^5} {:>9}'.format(
                 time, daparture['direction'], daparture['patternText'],
                 printMinutesToDeparture(relTimeSeconds)))
-
             printLine(lineLength, '-')
+            if i == numberOfDepartures:
+                break
 
+
+def printStops(inputString=None):
+    if (inputString != None and len(inputString) >= 1):
+        letters = []
+        letters.append(inputString[0].upper())
+    else:
+        letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+                   'o', 'p', 'r', 's', 't', 'u', 'w', 'z']
+    stopList = []
+
+    try:
+        f = open('stops.txt', 'r')
+        lines = f.readlines()
+        for line in lines:
+            if len(letters) == 1 and line[0] == letters[0][0]:
+                stopList.append(line.strip())
+        f.close()
+
+    except FileNotFoundError:
+        f = open('stops.txt', 'w')
+        for letter in letters:
+            requestURL = API_URL + \
+                'lookup/stopsByCharacter?character={}&language=en'.format(
+                    letter.upper())
+            try:
+                resp = requests.get(requestURL)
+                stops = resp.json()['stops']
+                for stop in stops:
+                    stopName = stop['name']
+                    stopList.append(stopName)
+                    f.write(stopName + '\n')
+
+            except Exception:
+                print('Nie udało się nawiązać połączenia')
+                break
+        f.close()
+
+    print('Lista przystanków:')
+    for stop in stopList:
+        print(stop)
+
+
+def main():
+    if (len(sys.argv) > 3):
+        print('Sposob użycia:')
+        print('python3 ttss.py nazwa-przystanku-poczatkowego nazwa-przystanku-koncowego')
+        print('python3 ttss.py list')
+        return
+
+    printLogo()
+    try:
+        if len(sys.argv) == 1 or (len(sys.argv) == 3 and sys.argv[1] != 'list'):
+            if len(sys.argv) == 1:
+                start = getStopInfo(input('Podaj nazwę przystanku początkowego '))
+                if start == None:
+                    print('Nie podano przystanku')
+                    return
+                print('Przystanek początkowy: ' + start['name'])
+                stop = getStopInfo(input('Podaj nazwę przystanku końcowego '))
+                if stop == None:
+                    print('Nie podano przystanku')
+                    return
+                print('Przystanek końcowy: ' + stop['name'])
+
+            elif len(sys.argv) == 3:
+                start = getStopInfo(sys.argv[1])
+                stop = getStopInfo(sys.argv[2])
+
+            if start != None and stop != None:
+                if stop['id'] == start['id']:
+                    print('Wybrano ten sam przystanek')
+                    return
+
+                listDepartures(start, stop, 15)
+
+        elif len(sys.argv) == 2 and sys.argv[1] == 'list':
+            # lista przystankow
+            printStops()
+
+        elif len(sys.argv) == 3 and sys.argv[1] == 'list':
+            printStops(sys.argv[2])
+    except KeyboardInterrupt:
+        return
 
 main()
